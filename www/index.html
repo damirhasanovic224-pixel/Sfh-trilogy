@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Strike Force Heroes Trilogy</title>
+    <style>
+        * { box-sizing: border-box; touch-action: none; user-select: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: sans-serif; }
+        #menu { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #fff; }
+        .btn { background: #ff4500; color: white; padding: 15px 30px; margin: 10px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        #game-container { width: 100vw; height: 100vh; display: none; position: relative; }
+        #player { width: 100%; height: 100%; }
+        
+        /* Touch Overlay Controls */
+        .touch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        .joystick-area { position: absolute; bottom: 20px; left: 20px; width: 150px; height: 150px; background: rgba(255, 255, 255, 0.15); border-radius: 50%; pointer-events: auto; }
+        .joystick-stick { position: absolute; top: 37.5px; left: 37.5px; width: 75px; height: 75px; background: rgba(255, 255, 255, 0.4); border-radius: 50%; }
+        .action-btn { position: absolute; width: 60px; height: 60px; background: rgba(255, 69, 0, 0.6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; pointer-events: auto; }
+        #btn-reload { bottom: 90px; right: 30px; }
+        #btn-switch { bottom: 20px; right: 100px; }
+        #btn-killstreak { bottom: 160px; right: 30px; }
+    </style>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+</head>
+<body>
+
+    <div id="menu">
+        <h1>Strike Force Heroes Trilogy</h1>
+        <button class="btn" onclick="launchGame('strike-force-heroes-1.swf')">Play SFH 1</button>
+        <button class="btn" onclick="launchGame('strike-force-heroes-2.swf')">Play SFH 2</button>
+        <button class="btn" onclick="launchGame('strike-force-heroes-3.swf')">Play SFH 3</button>
+    </div>
+
+    <div id="game-container">
+        <div id="player"></div>
+        <div class="touch-overlay" id="controls">
+            <div class="joystick-area" id="move-joystick">
+                <div class="joystick-stick" id="move-stick"></div>
+            </div>
+            <div class="action-btn" id="btn-reload">R</div>
+            <div class="action-btn" id="btn-switch">Q</div>
+            <div class="action-btn" id="btn-killstreak">E</div>
+        </div>
+    </div>
+
+    <script src="js/touch-controls.js"></script>
+    <script>
+        function launchGame(swfFile) {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            
+            window.RufflePlayer = window.RufflePlayer || {};
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            const container = document.getElementById('player');
+            container.appendChild(player);
+            
+            player.load({
+                url: 'SWF/' + swfFile,
+                allowScriptAccess: true,
+                autoplay: 'on'
+            });
+
+            initTouchControls(player);
+        }
+    </script>
+</body>
+</html>
