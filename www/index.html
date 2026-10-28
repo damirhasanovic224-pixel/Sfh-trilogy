@@ -12,10 +12,10 @@
         .btn { background: #ff4500; color: white; padding: 15px 30px; margin: 10px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
         
         #game-container { width: 100vw; height: 100vh; display: none; position: relative; background: #000; }
-        #player { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        #player { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; transform: translateZ(0); }
         #player > ruffle-player { width: 100% !important; height: 100% !important; }
 
-        /* Touch Overlay Controls - Forced to Top Layer */
+        /* Touch Overlay Controls */
         .touch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
         
         /* Left Movement Joystick */
@@ -69,11 +69,13 @@
             const container = document.getElementById('player');
             container.appendChild(player);
             
+            // Loaded with WebGL backend preference for high 30-60 FPS performance
             player.load({
                 url: 'SWF/' + swfFile,
                 allowScriptAccess: true,
                 autoplay: 'on',
-                letterbox: 'on'
+                letterbox: 'on',
+                preferredRenderer: 'webgl'
             });
 
             initTouchControls(player);

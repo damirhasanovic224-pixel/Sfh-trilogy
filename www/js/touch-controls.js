@@ -51,33 +51,59 @@ function initTouchControls(player) {
         }
     }
 
-    // 2. Aiming Trackpad (Right side drag for mouse movement)
+    // 2. Smart Aim Pad (Tracks drags for aiming, fires clicks for menu taps)
     const aimPad = document.getElementById('aim-pad');
     let lastX = 0, lastY = 0;
+    let startX = 0, startY = 0;
+    let isDragging = false;
 
     aimPad.addEventListener('touchstart', (e) => {
         const touch = e.touches[0];
         lastX = touch.clientX;
         lastY = touch.clientY;
+        startX = touch.clientX;
+        startY = touch.clientY;
+        isDragging = false;
     });
 
     aimPad.addEventListener('touchmove', (e) => {
         e.preventDefault();
         const touch = e.touches[0];
-        const deltaX = touch.clientX - lastX;
-        const deltaY = touch.clientY - lastY;
-        lastX = touch.clientX;
-        lastY = touch.clientY;
+        const moveDistance = Math.hypot(touch.clientX - startX, touch.clientY - startY);
 
-        // Dispatch simulated mouse movement to player container
-        const mouseEvent = new MouseEvent('mousemove', {
-            bubbles: true,
-            clientX: touch.clientX,
-            clientY: touch.clientY,
-            movementX: deltaX,
-            movementY: deltaY
-        });
-        player.dispatchEvent(mouseEvent);
+        if (moveDistance > 12) {
+            isDragging = true;
+        }
+
+        if (isDragging) {
+            const deltaX = touch.clientX - lastX;
+            const deltaY = touch.clientY - lastY;
+            lastX = touch.clientX;
+            lastY = touch.clientY;
+
+            const mouseEvent = new MouseEvent('mousemove', {
+                bubbles: true,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                movementX: deltaX,
+                movementY: deltaY
+            });
+            player.dispatchEvent(mouseEvent);
+        }
+    });
+
+    aimPad.addEventListener('touchend', (e) => {
+        if (!isDragging) {
+            // It was a tap, not a drag! Forward a click event to the game menu.
+            const touch = e.changedTouches[0];
+            const downEvent = new MouseEvent('mousedown', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
+            const upEvent = new MouseEvent('mouseup', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
+            const clickEvent = new MouseEvent('click', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
+            
+            player.dispatchEvent(downEvent);
+            player.dispatchEvent(upEvent);
+            player.dispatchEvent(clickEvent);
+        }
     });
 
     // 3. Action Buttons (Fire, Reload, Switch, Killstreak)
