@@ -32,7 +32,7 @@ function initTouchControls(player) {
         if (aimTouchId !== null) {
             for (let i = 0; i < e.changedTouches.length; i++) {
                 if (e.changedTouches[i].identifier === aimTouchId) {
-                    processAim(e.changedTouches[i]);
+                    processAimMove(e.changedTouches[i]);
                     break;
                 }
             }
@@ -53,7 +53,6 @@ function initTouchControls(player) {
             }
             if (e.changedTouches[i].identifier === aimTouchId) {
                 aimTouchId = null;
-                aimStick.style.transform = `translate(0px, 0px)`;
                 const mUp = new MouseEvent('mouseup', { bubbles: true, button: 0 });
                 player.dispatchEvent(mUp);
             }
@@ -88,39 +87,41 @@ function initTouchControls(player) {
         }
     }
 
-    // --- 2. Aim + Fire Joystick (Right) ---
-    const aimJoystick = document.getElementById('aim-joystick');
-    const aimStick = document.getElementById('aim-stick');
+    // --- 2. Right Trackpad Aim & Fire Zone ---
+    const aimTrackpad = document.getElementById('aim-trackpad');
+    let lastX = 0, lastY = 0;
 
-    aimJoystick.addEventListener('touchstart', (e) => {
+    aimTrackpad.addEventListener('touchstart', (e) => {
         if (aimTouchId === null) {
             const touch = e.changedTouches[0];
             aimTouchId = touch.identifier;
-            processAim(touch);
-            const mDown = new MouseEvent('mousedown', { bubbles: true, button: 0 });
+            lastX = touch.clientX;
+            lastY = touch.clientY;
+
+            // Tap / Touch starts firing
+            const mDown = new MouseEvent('mousedown', {
+                bubbles: true,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                button: 0
+            });
             player.dispatchEvent(mDown);
         }
     });
 
-    function processAim(touch) {
-        const rect = aimJoystick.getBoundingClientRect();
-        const x = touch.clientX - (rect.left + rect.width / 2);
-        const y = touch.clientY - (rect.top + rect.height / 2);
+    function processAimMove(touch) {
+        const deltaX = touch.clientX - lastX;
+        const deltaY = touch.clientY - lastY;
+        lastX = touch.clientX;
+        lastY = touch.clientY;
 
-        const distance = Math.min(Math.hypot(x, y), 50);
-        const angle = Math.atan2(y, x);
-
-        aimStick.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
-
-        const screenCenterX = window.innerWidth / 2;
-        const screenCenterY = window.innerHeight / 2;
-        const targetX = screenCenterX + (Math.cos(angle) * distance * 3.5);
-        const targetY = screenCenterY + (Math.sin(angle) * distance * 3.5);
-
+        // Send smooth relative mouse movement for aiming
         const mMove = new MouseEvent('mousemove', {
             bubbles: true,
-            clientX: targetX,
-            clientY: targetY
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            movementX: deltaX,
+            movementY: deltaY
         });
         player.dispatchEvent(mMove);
     }
