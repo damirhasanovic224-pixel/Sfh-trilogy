@@ -1,7 +1,7 @@
 function initTouchControls(player) {
-    // 1. Movement Joystick (WASD)
-    const joystick = document.getElementById('move-joystick');
-    const stick = document.getElementById('move-stick');
+    // --- 1. Movement Joystick (Left) ---
+    const moveJoystick = document.getElementById('move-joystick');
+    const moveStick = document.getElementById('move-stick');
     let activeKeys = { KeyW: false, KeyA: false, KeyS: false, KeyD: false };
 
     function dispatchKey(code, type) {
@@ -9,10 +9,10 @@ function initTouchControls(player) {
         document.dispatchEvent(event);
     }
 
-    joystick.addEventListener('touchstart', handleJoystick);
-    joystick.addEventListener('touchmove', handleJoystick);
-    joystick.addEventListener('touchend', () => {
-        stick.style.transform = `translate(0px, 0px)`;
+    moveJoystick.addEventListener('touchstart', handleMove);
+    moveJoystick.addEventListener('touchmove', handleMove);
+    moveJoystick.addEventListener('touchend', () => {
+        moveStick.style.transform = `translate(0px, 0px)`;
         for (let key in activeKeys) {
             if (activeKeys[key]) {
                 dispatchKey(key, 'keyup');
@@ -21,9 +21,9 @@ function initTouchControls(player) {
         }
     });
 
-    function handleJoystick(e) {
+    function handleMove(e) {
         e.preventDefault();
-        const rect = joystick.getBoundingClientRect();
+        const rect = moveJoystick.getBoundingClientRect();
         const touch = e.touches[0];
         const x = touch.clientX - (rect.left + rect.width / 2);
         const y = touch.clientY - (rect.top + rect.height / 2);
@@ -31,7 +31,7 @@ function initTouchControls(player) {
         const distance = Math.min(Math.hypot(x, y), 50);
         const angle = Math.atan2(y, x);
 
-        stick.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+        moveStick.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
 
         const newKeys = {
             KeyA: x < -15,
@@ -51,76 +51,82 @@ function initTouchControls(player) {
         }
     }
 
-    // 2. Smart Aim Pad (Tracks drags for aiming, fires clicks for menu taps)
-    const aimPad = document.getElementById('aim-pad');
-    let lastX = 0, lastY = 0;
-    let startX = 0, startY = 0;
-    let isDragging = false;
+    // --- 2. Aim + Fire Joystick (Right) ---
+    const aimJoystick = document.getElementById('aim-joystick');
+    const aimStick = document.getElementById('aim-stick');
+    let isFiring = false;
 
-    aimPad.addEventListener('touchstart', (e) => {
-        const touch = e.touches[0];
-        lastX = touch.clientX;
-        lastY = touch.clientY;
-        startX = touch.clientX;
-        startY = touch.clientY;
-        isDragging = false;
-    });
-
-    aimPad.addEventListener('touchmove', (e) => {
+    aimJoystick.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        isFiring = true;
+        handleAim(e);
+        // Start weapon fire
+        const mDown = new MouseEvent('mousedown', { bubbles: true, button: 0 });
+        player.dispatchEvent(mDown);
+    });
+
+    aimJoystick.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (isFiring) {
+            handleAim(e);
+        }
+    });
+
+    aimJoystick.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        isFiring = false;
+        aimStick.style.transform = `translate(0px, 0px)`;
+        // Cease fire
+        const mUp = new MouseEvent('mouseup', { bubbles: true, button: 0 });
+        player.dispatchEvent(mUp);
+    });
+
+    function handleAim(e) {
+        const rect = aimJoystick.getBoundingClientRect();
         const touch = e.touches[0];
-        const moveDistance = Math.hypot(touch.clientX - startX, touch.clientY - startY);
+        const x = touch.clientX - (rect.left + rect.width / 2);
+        const y = touch.clientY - (rect.top + rect.height / 2);
 
-        if (moveDistance > 12) {
-            isDragging = true;
-        }
+        const distance = Math.min(Math.hypot(x, y), 50);
+        const angle = Math.atan2(y, x);
 
-        if (isDragging) {
-            const deltaX = touch.clientX - lastX;
-            const deltaY = touch.clientY - lastY;
-            lastX = touch.clientX;
-            lastY = touch.clientY;
+        aimStick.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
 
-            const mouseEvent = new MouseEvent('mousemove', {
-                bubbles: true,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                movementX: deltaX,
-                movementY: deltaY
-            });
-            player.dispatchEvent(mouseEvent);
-        }
-    });
+        // Calculate aim offset relative to screen center (player location)
+        const screenCenterX = window.innerWidth / 2;
+        const screenCenterY = window.innerHeight / 2;
+        
+        const aimDistanceMultiplier = 3.5;
+        const targetX = screenCenterX + (Math.cos(angle) * distance * aimDistanceMultiplier);
+        const targetY = screenCenterY + (Math.sin(angle) * distance * aimDistanceMultiplier);
 
-    aimPad.addEventListener('touchend', (e) => {
-        if (!isDragging) {
-            // It was a tap, not a drag! Forward a click event to the game menu.
-            const touch = e.changedTouches[0];
-            const downEvent = new MouseEvent('mousedown', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
-            const upEvent = new MouseEvent('mouseup', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
-            const clickEvent = new MouseEvent('click', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
-            
-            player.dispatchEvent(downEvent);
-            player.dispatchEvent(upEvent);
-            player.dispatchEvent(clickEvent);
-        }
-    });
-
-    // 3. Action Buttons (Fire, Reload, Switch, Killstreak)
-    function bindMouseAction(id) {
-        const btn = document.getElementById(id);
-        btn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const mEvent = new MouseEvent('mousedown', { bubbles: true, button: 0 });
-            player.dispatchEvent(mEvent);
+        const mMove = new MouseEvent('mousemove', {
+            bubbles: true,
+            clientX: targetX,
+            clientY: targetY
         });
-        btn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            const mEvent = new MouseEvent('mouseup', { bubbles: true, button: 0 });
-            player.dispatchEvent(mEvent);
-        });
+        player.dispatchEvent(mMove);
     }
 
+    // --- 3. Direct Menu Taps Passthrough ---
+    const menuTapZone = document.getElementById('menu-tap-zone');
+    menuTapZone.style.display = 'block';
+
+    menuTapZone.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        const mDown = new MouseEvent('mousedown', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
+        player.dispatchEvent(mDown);
+    });
+
+    menuTapZone.addEventListener('touchend', (e) => {
+        const touch = e.changedTouches[0];
+        const mUp = new MouseEvent('mouseup', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
+        const mClick = new MouseEvent('click', { bubbles: true, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
+        player.dispatchEvent(mUp);
+        player.dispatchEvent(mClick);
+    });
+
+    // --- 4. Action Buttons ---
     function bindKeyAction(id, keycode) {
         const btn = document.getElementById(id);
         btn.addEventListener('touchstart', (e) => {
@@ -133,7 +139,6 @@ function initTouchControls(player) {
         });
     }
 
-    bindMouseAction('btn-fire');
     bindKeyAction('btn-reload', 'KeyR');
     bindKeyAction('btn-switch', 'KeyQ');
     bindKeyAction('btn-killstreak', 'KeyE');

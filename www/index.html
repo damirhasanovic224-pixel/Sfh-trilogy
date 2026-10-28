@@ -6,31 +6,35 @@
     <title>Strike Force Heroes Trilogy</title>
     <style>
         * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: #000; font-family: sans-serif; }
         
         #menu { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #fff; }
         .btn { background: #ff4500; color: white; padding: 15px 30px; margin: 10px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
         
-        #game-container { width: 100vw; height: 100vh; display: none; position: relative; background: #000; }
-        #player { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; transform: translateZ(0); }
-        #player > ruffle-player { width: 100% !important; height: 100% !important; }
+        #game-container { width: 100vw; height: 100vh; display: none; position: absolute; top: 0; left: 0; background: #000; overflow: hidden; }
+        #player { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        #player > ruffle-player { width: 100vw !important; height: 100vh !important; display: block !important; }
 
-        /* Touch Overlay Controls */
-        .touch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+        /* Touch Overlay Layer */
+        .touch-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
         
-        /* Left Movement Joystick */
-        .joystick-area { position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 50%; pointer-events: auto; }
-        .joystick-stick { position: absolute; top: 35px; left: 35px; width: 70px; height: 70px; background: rgba(255, 255, 255, 0.4); border-radius: 50%; }
+        /* Joysticks */
+        .joystick-area { position: absolute; width: 150px; height: 150px; border-radius: 50%; pointer-events: auto; }
+        #move-joystick { bottom: 30px; left: 30px; background: rgba(255, 255, 255, 0.15); border: 2px solid rgba(255, 255, 255, 0.3); }
+        #aim-joystick { bottom: 30px; right: 30px; background: rgba(255, 69, 0, 0.25); border: 2px solid rgba(255, 69, 0, 0.5); }
+        
+        .joystick-stick { position: absolute; top: 37.5px; left: 37.5px; width: 75px; height: 75px; border-radius: 50%; }
+        #move-stick { background: rgba(255, 255, 255, 0.5); }
+        #aim-stick { background: rgba(255, 69, 0, 0.7); }
 
-        /* Right Aiming Trackpad Zone */
-        #aim-pad { position: absolute; top: 0; right: 0; width: 50%; height: 100%; pointer-events: auto; }
+        /* Action Utility Buttons */
+        .action-btn { position: absolute; background: rgba(0, 0, 0, 0.6); color: white; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; pointer-events: auto; font-size: 16px; width: 55px; height: 55px; }
+        #btn-reload { bottom: 200px; right: 30px; }
+        #btn-switch { bottom: 200px; right: 100px; }
+        #btn-killstreak { bottom: 200px; right: 170px; }
 
-        /* Action Buttons */
-        .action-btn { position: absolute; background: rgba(255, 69, 0, 0.6); color: white; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; pointer-events: auto; font-size: 16px; }
-        #btn-fire { bottom: 30px; right: 30px; width: 85px; height: 85px; background: rgba(220, 20, 60, 0.7); font-size: 18px; }
-        #btn-reload { bottom: 130px; right: 130px; width: 60px; height: 60px; }
-        #btn-switch { bottom: 30px; right: 130px; width: 60px; height: 60px; }
-        #btn-killstreak { bottom: 130px; right: 30px; width: 60px; height: 60px; }
+        /* Fullscreen Interactive Tap Zone for Menus */
+        #menu-tap-zone { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: auto; z-index: 9990; display: none; }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
@@ -45,12 +49,14 @@
 
     <div id="game-container">
         <div id="player"></div>
+        <div id="menu-tap-zone"></div>
         <div class="touch-overlay" id="controls">
             <div class="joystick-area" id="move-joystick">
                 <div class="joystick-stick" id="move-stick"></div>
             </div>
-            <div id="aim-pad"></div>
-            <div class="action-btn" id="btn-fire">FIRE</div>
+            <div class="joystick-area" id="aim-joystick">
+                <div class="joystick-stick" id="aim-stick"></div>
+            </div>
             <div class="action-btn" id="btn-reload">R</div>
             <div class="action-btn" id="btn-switch">Q</div>
             <div class="action-btn" id="btn-killstreak">E</div>
@@ -69,12 +75,11 @@
             const container = document.getElementById('player');
             container.appendChild(player);
             
-            // Loaded with WebGL backend preference for high 30-60 FPS performance
             player.load({
                 url: 'SWF/' + swfFile,
                 allowScriptAccess: true,
                 autoplay: 'on',
-                letterbox: 'on',
+                scale: 'exactFit',
                 preferredRenderer: 'webgl'
             });
 
