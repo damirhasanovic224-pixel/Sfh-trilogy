@@ -19,22 +19,19 @@
         .touch-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
         
         /* Joysticks */
-        .joystick-area { position: absolute; width: 150px; height: 150px; border-radius: 50%; pointer-events: auto; }
-        #move-joystick { bottom: 30px; left: 30px; background: rgba(255, 255, 255, 0.15); border: 2px solid rgba(255, 255, 255, 0.3); }
-        #aim-joystick { bottom: 30px; right: 30px; background: rgba(255, 69, 0, 0.25); border: 2px solid rgba(255, 69, 0, 0.5); }
+        .joystick-area { position: absolute; width: 160px; height: 160px; border-radius: 50%; pointer-events: auto; }
+        #move-joystick { bottom: 30px; left: 30px; background: rgba(255, 255, 255, 0.12); border: 2px solid rgba(255, 255, 255, 0.25); }
+        #aim-joystick { bottom: 30px; right: 30px; background: rgba(255, 69, 0, 0.2); border: 2px solid rgba(255, 69, 0, 0.4); }
         
-        .joystick-stick { position: absolute; top: 37.5px; left: 37.5px; width: 75px; height: 75px; border-radius: 50%; }
-        #move-stick { background: rgba(255, 255, 255, 0.5); }
-        #aim-stick { background: rgba(255, 69, 0, 0.7); }
+        .joystick-stick { position: absolute; top: 40px; left: 40px; width: 80px; height: 80px; border-radius: 50%; }
+        #move-stick { background: rgba(255, 255, 255, 0.45); }
+        #aim-stick { background: rgba(255, 69, 0, 0.65); }
 
         /* Action Utility Buttons */
-        .action-btn { position: absolute; background: rgba(0, 0, 0, 0.6); color: white; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; pointer-events: auto; font-size: 16px; width: 55px; height: 55px; }
-        #btn-reload { bottom: 200px; right: 30px; }
-        #btn-switch { bottom: 200px; right: 100px; }
-        #btn-killstreak { bottom: 200px; right: 170px; }
-
-        /* Fullscreen Interactive Tap Zone for Menus */
-        #menu-tap-zone { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: auto; z-index: 9990; display: none; }
+        .action-btn { position: absolute; background: rgba(0, 0, 0, 0.6); color: white; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; pointer-events: auto; font-size: 16px; width: 60px; height: 60px; }
+        #btn-reload { bottom: 210px; right: 30px; }
+        #btn-switch { bottom: 210px; right: 105px; }
+        #btn-killstreak { bottom: 210px; right: 180px; }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
@@ -49,7 +46,6 @@
 
     <div id="game-container">
         <div id="player"></div>
-        <div id="menu-tap-zone"></div>
         <div class="touch-overlay" id="controls">
             <div class="joystick-area" id="move-joystick">
                 <div class="joystick-stick" id="move-stick"></div>
