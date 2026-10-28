@@ -98,7 +98,7 @@ function initTouchControls(player) {
             lastX = touch.clientX;
             lastY = touch.clientY;
 
-            // Tap / Touch starts firing
+            // Touch starts firing/clicking
             const mDown = new MouseEvent('mousedown', {
                 bubbles: true,
                 clientX: touch.clientX,
@@ -115,7 +115,6 @@ function initTouchControls(player) {
         lastX = touch.clientX;
         lastY = touch.clientY;
 
-        // Send smooth relative mouse movement for aiming
         const mMove = new MouseEvent('mousemove', {
             bubbles: true,
             clientX: touch.clientX,

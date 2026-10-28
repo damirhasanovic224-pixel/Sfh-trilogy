@@ -13,7 +13,7 @@
         
         #game-container { width: 100vw; height: 100vh; display: none; position: absolute; top: 0; left: 0; background: #000; overflow: hidden; }
         #player { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
-        #player > ruffle-player { width: 100vw !important; height: 100vh !important; display: block !important; }
+        #player > ruffle-player { width: 100vw !important; height: 100vw !important; display: block !important; }
 
         /* Touch Overlay Layer - Hidden by default during loading/menus */
         .touch-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
@@ -35,12 +35,11 @@
         #toggle-controls-btn { position: absolute; top: 15px; right: 15px; z-index: 10000; background: rgba(255, 69, 0, 0.9); color: white; border: 2px solid rgba(255, 255, 255, 0.5); padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
     </style>
     <script>
-        // High-Performance Global Ruffle Configuration
         window.RufflePlayer = window.RufflePlayer || {};
         window.RufflePlayer.config = {
             autoplay: "on",
             letterbox: "on",
-            quality: "low", // Maximizes FPS and eliminates lag on mobile
+            quality: "low", // Maximizes FPS and eliminates mobile lag
             preferredRenderer: "webgl",
             compatibilityRules: true,
             allowNetworking: "all",
@@ -102,8 +101,10 @@
                 container.innerHTML = '';
                 container.appendChild(player);
                 
+                // Spoof domain base URL to bypass offline site-locks
                 player.load({
-                    url: 'SWF/' + swfFile
+                    url: 'SWF/' + swfFile,
+                    base: 'https://games.armorgames.com/'
                 });
 
                 initTouchControls(player);
