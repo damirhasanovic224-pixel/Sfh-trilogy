@@ -15,8 +15,8 @@
         #player { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         #player > ruffle-player { width: 100vw !important; height: 100vh !important; display: block !important; }
 
-        /* Touch Overlay Layer */
-        .touch-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
+        /* Touch Overlay Layer - Hidden by default during loading/menus */
+        .touch-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
         
         /* Joysticks */
         .joystick-area { position: absolute; width: 160px; height: 160px; border-radius: 50%; pointer-events: auto; }
@@ -25,13 +25,16 @@
         
         .joystick-stick { position: absolute; top: 40px; left: 40px; width: 80px; height: 80px; border-radius: 50%; }
         #move-stick { background: rgba(255, 255, 255, 0.45); }
-        #aim-stick { background: rgba(255, 69, 0, 0.65); }
+        #aim-stick { background: rgba(255, 0, 0, 0.65); }
 
         /* Action Utility Buttons */
         .action-btn { position: absolute; background: rgba(0, 0, 0, 0.6); color: white; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; pointer-events: auto; font-size: 16px; width: 60px; height: 60px; }
         #btn-reload { bottom: 210px; right: 30px; }
         #btn-switch { bottom: 210px; right: 105px; }
         #btn-killstreak { bottom: 210px; right: 180px; }
+
+        /* Floating Control Toggle Button */
+        #toggle-controls-btn { position: absolute; top: 15px; right: 15px; z-index: 10000; background: rgba(255, 69, 0, 0.9); color: white; border: 2px solid rgba(255, 255, 255, 0.5); padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
@@ -45,6 +48,7 @@
     </div>
 
     <div id="game-container">
+        <button id="toggle-controls-btn" onclick="toggleControls()">Controls: OFF</button>
         <div id="player"></div>
         <div class="touch-overlay" id="controls">
             <div class="joystick-area" id="move-joystick">
@@ -61,6 +65,23 @@
 
     <script src="js/touch-controls.js"></script>
     <script>
+        let controlsVisible = false;
+
+        function toggleControls() {
+            controlsVisible = !controlsVisible;
+            const controlsEl = document.getElementById('controls');
+            const btnEl = document.getElementById('toggle-controls-btn');
+            if (controlsVisible) {
+                controlsEl.style.display = 'block';
+                btnEl.textContent = 'Controls: ON';
+                btnEl.style.background = 'rgba(0, 140, 0, 0.9)';
+            } else {
+                controlsEl.style.display = 'none';
+                btnEl.textContent = 'Controls: OFF';
+                btnEl.style.background = 'rgba(255, 69, 0, 0.9)';
+            }
+        }
+
         function launchGame(swfFile) {
             document.getElementById('menu').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
@@ -75,7 +96,8 @@
                 url: 'SWF/' + swfFile,
                 allowScriptAccess: true,
                 autoplay: 'on',
-                scale: 'exactFit',
+                scale: 'showAll',
+                letterbox: 'on',
                 preferredRenderer: 'webgl'
             });
 

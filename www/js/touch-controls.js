@@ -97,7 +97,6 @@ function initTouchControls(player) {
             const touch = e.changedTouches[0];
             aimTouchId = touch.identifier;
             processAim(touch);
-            // Trigger fire down
             const mDown = new MouseEvent('mousedown', { bubbles: true, button: 0 });
             player.dispatchEvent(mDown);
         }
