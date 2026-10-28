@@ -1,7 +1,7 @@
 function initTouchControls(player) {
+    // 1. Movement Joystick (WASD)
     const joystick = document.getElementById('move-joystick');
     const stick = document.getElementById('move-stick');
-    
     let activeKeys = { KeyW: false, KeyA: false, KeyS: false, KeyD: false };
 
     function dispatchKey(code, type) {
@@ -31,9 +31,7 @@ function initTouchControls(player) {
         const distance = Math.min(Math.hypot(x, y), 50);
         const angle = Math.atan2(y, x);
 
-        const stickX = Math.cos(angle) * distance;
-        const stickY = Math.sin(angle) * distance;
-        stick.style.transform = `translate(${stickX}px, ${stickY}px)`;
+        stick.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
 
         const newKeys = {
             KeyA: x < -15,
@@ -53,7 +51,51 @@ function initTouchControls(player) {
         }
     }
 
-    function bindButton(id, keycode) {
+    // 2. Aiming Trackpad (Right side drag for mouse movement)
+    const aimPad = document.getElementById('aim-pad');
+    let lastX = 0, lastY = 0;
+
+    aimPad.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        lastX = touch.clientX;
+        lastY = touch.clientY;
+    });
+
+    aimPad.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - lastX;
+        const deltaY = touch.clientY - lastY;
+        lastX = touch.clientX;
+        lastY = touch.clientY;
+
+        // Dispatch simulated mouse movement to player container
+        const mouseEvent = new MouseEvent('mousemove', {
+            bubbles: true,
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            movementX: deltaX,
+            movementY: deltaY
+        });
+        player.dispatchEvent(mouseEvent);
+    });
+
+    // 3. Action Buttons (Fire, Reload, Switch, Killstreak)
+    function bindMouseAction(id) {
+        const btn = document.getElementById(id);
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const mEvent = new MouseEvent('mousedown', { bubbles: true, button: 0 });
+            player.dispatchEvent(mEvent);
+        });
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const mEvent = new MouseEvent('mouseup', { bubbles: true, button: 0 });
+            player.dispatchEvent(mEvent);
+        });
+    }
+
+    function bindKeyAction(id, keycode) {
         const btn = document.getElementById(id);
         btn.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -65,7 +107,8 @@ function initTouchControls(player) {
         });
     }
 
-    bindButton('btn-reload', 'KeyR');
-    bindButton('btn-switch', 'KeyQ');
-    bindButton('btn-killstreak', 'KeyE');
+    bindMouseAction('btn-fire');
+    bindKeyAction('btn-reload', 'KeyR');
+    bindKeyAction('btn-switch', 'KeyQ');
+    bindKeyAction('btn-killstreak', 'KeyE');
 }

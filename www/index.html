@@ -5,21 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Strike Force Heroes Trilogy</title>
     <style>
-        * { box-sizing: border-box; touch-action: none; user-select: none; }
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: sans-serif; }
+        
         #menu { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #fff; }
         .btn { background: #ff4500; color: white; padding: 15px 30px; margin: 10px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        #game-container { width: 100vw; height: 100vh; display: none; position: relative; }
-        #player { width: 100%; height: 100%; }
         
-        /* Touch Overlay Controls */
-        .touch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .joystick-area { position: absolute; bottom: 20px; left: 20px; width: 150px; height: 150px; background: rgba(255, 255, 255, 0.15); border-radius: 50%; pointer-events: auto; }
-        .joystick-stick { position: absolute; top: 37.5px; left: 37.5px; width: 75px; height: 75px; background: rgba(255, 255, 255, 0.4); border-radius: 50%; }
-        .action-btn { position: absolute; width: 60px; height: 60px; background: rgba(255, 69, 0, 0.6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; pointer-events: auto; }
-        #btn-reload { bottom: 90px; right: 30px; }
-        #btn-switch { bottom: 20px; right: 100px; }
-        #btn-killstreak { bottom: 160px; right: 30px; }
+        #game-container { width: 100vw; height: 100vh; display: none; position: relative; background: #000; }
+        #player { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        #player > ruffle-player { width: 100% !important; height: 100% !important; }
+
+        /* Touch Overlay Controls - Forced to Top Layer */
+        .touch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+        
+        /* Left Movement Joystick */
+        .joystick-area { position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 50%; pointer-events: auto; }
+        .joystick-stick { position: absolute; top: 35px; left: 35px; width: 70px; height: 70px; background: rgba(255, 255, 255, 0.4); border-radius: 50%; }
+
+        /* Right Aiming Trackpad Zone */
+        #aim-pad { position: absolute; top: 0; right: 0; width: 50%; height: 100%; pointer-events: auto; }
+
+        /* Action Buttons */
+        .action-btn { position: absolute; background: rgba(255, 69, 0, 0.6); color: white; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; pointer-events: auto; font-size: 16px; }
+        #btn-fire { bottom: 30px; right: 30px; width: 85px; height: 85px; background: rgba(220, 20, 60, 0.7); font-size: 18px; }
+        #btn-reload { bottom: 130px; right: 130px; width: 60px; height: 60px; }
+        #btn-switch { bottom: 30px; right: 130px; width: 60px; height: 60px; }
+        #btn-killstreak { bottom: 130px; right: 30px; width: 60px; height: 60px; }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
@@ -38,6 +49,8 @@
             <div class="joystick-area" id="move-joystick">
                 <div class="joystick-stick" id="move-stick"></div>
             </div>
+            <div id="aim-pad"></div>
+            <div class="action-btn" id="btn-fire">FIRE</div>
             <div class="action-btn" id="btn-reload">R</div>
             <div class="action-btn" id="btn-switch">Q</div>
             <div class="action-btn" id="btn-killstreak">E</div>
@@ -59,7 +72,8 @@
             player.load({
                 url: 'SWF/' + swfFile,
                 allowScriptAccess: true,
-                autoplay: 'on'
+                autoplay: 'on',
+                letterbox: 'on'
             });
 
             initTouchControls(player);
