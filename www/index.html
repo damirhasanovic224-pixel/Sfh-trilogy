@@ -36,6 +36,17 @@
         /* Floating Control Toggle Button */
         #toggle-controls-btn { position: absolute; top: 15px; right: 15px; z-index: 10000; background: rgba(255, 69, 0, 0.9); color: white; border: 2px solid rgba(255, 255, 255, 0.5); padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
     </style>
+    <script>
+        // Global Ruffle configuration to bypass offline site-locks and API check loops
+        window.RufflePlayer = window.RufflePlayer || {};
+        window.RufflePlayer.config = {
+            autoplay: "on",
+            letterbox: "on",
+            compatibilityRules: true,
+            allowNetworking: "all",
+            allowScriptAccess: true
+        };
+    </script>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 <body>
@@ -86,22 +97,19 @@
             document.getElementById('menu').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
             
-            window.RufflePlayer = window.RufflePlayer || {};
-            const ruffle = window.RufflePlayer.newest();
-            const player = ruffle.createPlayer();
-            const container = document.getElementById('player');
-            container.appendChild(player);
-            
-            player.load({
-                url: 'SWF/' + swfFile,
-                allowScriptAccess: true,
-                autoplay: 'on',
-                scale: 'showAll',
-                letterbox: 'on',
-                preferredRenderer: 'webgl'
-            });
+            setTimeout(() => {
+                const ruffle = window.RufflePlayer.newest();
+                const player = ruffle.createPlayer();
+                const container = document.getElementById('player');
+                container.innerHTML = '';
+                container.appendChild(player);
+                
+                player.load({
+                    url: 'SWF/' + swfFile
+                });
 
-            initTouchControls(player);
+                initTouchControls(player);
+            }, 100);
         }
     </script>
 </body>
