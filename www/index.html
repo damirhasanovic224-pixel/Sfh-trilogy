@@ -90,13 +90,9 @@
             }
         }
 
-        async function launchGame(swfFile) {
-            try {
-                document.getElementById('menu').style.display = 'none';
-                document.getElementById('game-container').style.display = 'block';
-                const res = await fetch('SWF/' + swfFile);
-                if (!res.ok) throw new Error("HTTP error! status: " + res.status);
-                const swfData = await res.arrayBuffer();
+                function launchGame(swfFile) {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
             
             setTimeout(() => {
                 const ruffle = window.RufflePlayer.newest();
@@ -105,16 +101,13 @@
                 container.innerHTML = '';
                 container.appendChild(player);
                 
-                // Spoof domain base URL to bypass offline site-locks
                 player.load({
-                    fetch('SWF/' + swfFile).then(r => r.arrayBuffer()).then(data => player.load({data})),
+                    url: 'SWF/' + swfFile,
                     base: 'https://games.armorgames.com/'
                 });
 
                 initTouchControls(player);
             }, 100);
-            } catch(e) { alert("Error loading game: " + e.message); document.getElementById('menu').style.display = 'flex'; document.getElementById('game-container').style.display = 'none'; }
-        }
-    </script>
+        }</script>
 </body>
 </html>
