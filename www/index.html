@@ -91,10 +91,12 @@
         }
 
         async function launchGame(swfFile) {
-            document.getElementById('menu').style.display = 'none';
-            document.getElementById('game-container').style.display = 'block';
-            const res = await fetch('SWF/' + swfFile);
-            const swfData = await res.arrayBuffer();
+            try {
+                document.getElementById('menu').style.display = 'none';
+                document.getElementById('game-container').style.display = 'block';
+                const res = await fetch('SWF/' + swfFile);
+                if (!res.ok) throw new Error("HTTP error! status: " + res.status);
+                const swfData = await res.arrayBuffer();
             
             setTimeout(() => {
                 const ruffle = window.RufflePlayer.newest();
@@ -111,6 +113,7 @@
 
                 initTouchControls(player);
             }, 100);
+            } catch(e) { alert("Error loading game: " + e.message); document.getElementById('menu').style.display = 'flex'; document.getElementById('game-container').style.display = 'none'; }
         }
     </script>
 </body>
