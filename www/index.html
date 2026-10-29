@@ -103,7 +103,7 @@
                 
                 // Spoof domain base URL to bypass offline site-locks
                 player.load({
-                    url: 'SWF/' + swfFile,
+                    fetch('SWF/' + swfFile).then(r => r.arrayBuffer()).then(data => player.load({data})),
                     base: 'https://games.armorgames.com/'
                 });
 
