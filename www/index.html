@@ -90,9 +90,11 @@
             }
         }
 
-        function launchGame(swfFile) {
+        async function launchGame(swfFile) {
             document.getElementById('menu').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
+            const res = await fetch('SWF/' + swfFile);
+            const swfData = await res.arrayBuffer();
             
             setTimeout(() => {
                 const ruffle = window.RufflePlayer.newest();
