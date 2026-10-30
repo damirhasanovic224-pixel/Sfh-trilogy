@@ -107,23 +107,35 @@ window.RufflePlayer.config = {
             }
         }
 
-                function launchGame(swfFile) {
+                async function launchGame(swfFile) {
     document.getElementById("menu").style.display = "none";
     document.getElementById("game-container").style.display = "block";
     
-    setTimeout(() => {
-        const ruffle = window.RufflePlayer.newest();
-        const player = ruffle.createPlayer();
-        const container = document.getElementById("player");
-        container.innerHTML = "";
-        container.appendChild(player);
-        
-        player.load({
-            url: "https://games.armorgames.com/SWF/" + swfFile
-        });
+    try {
+        const res = await fetch("SWF/" + swfFile);
+        if (!res.ok) throw new Error("Local SWF file not found: " + res.status);
+        const swfBuffer = await res.arrayBuffer();
 
-        initTouchControls(player);
-    }, 100);
+        setTimeout(() => {
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            const container = document.getElementById("player");
+            container.innerHTML = "";
+            container.appendChild(player);
+            
+            player.load({
+                data: swfBuffer,
+                swfFileName: "https://games.armorgames.com/games/" + swfFile,
+                base: "https://games.armorgames.com/"
+            });
+
+            initTouchControls(player);
+        }, 100);
+    } catch (e) {
+        alert("Launch error: " + e.message);
+        document.getElementById("menu").style.display = "flex";
+        document.getElementById("game-container").style.display = "none";
+    }
 }</script>
 </body>
 </html>
