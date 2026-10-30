@@ -41,18 +41,14 @@ window.RufflePlayer.config = {
     allowScriptAccess: true,
     quality: "low",
     preferredRenderer: "webgl",
-    compatibilityRules: true,
+    compatibilityRules: false,
     forceScale: true,
+    scale: "showAll",
     frameRate: 60,
+    tickRate: 60,
     wmode: "direct",
-    pageUrl: "https://games.armorgames.com/",
-    allowScriptAccess: true,
-    quality: "low",
-    preferredRenderer: "webgl",
-    compatibilityRules: true,
-    urlRewriteRules: [
-        ["^https://games\\.armorgames\\.com/SWF/(.*)", "SWF/$1"]
-    ]
+    splashScreen: false,
+    playerVersion: 32
 };
 </script>
 <script src="ruffle/ruffle.js"></script>
@@ -142,6 +138,13 @@ window.RufflePlayer.config = {
                 swfFileName: "https://games.armorgames.com/games/" + swfFile,
                 base: "https://games.armorgames.com/"
             });
+
+            // Force WebGL Canvas hardware acceleration hint
+            const canvas = player.querySelector("canvas");
+            if (canvas) {
+                const gl = canvas.getContext("webgl2", { powerPreference: "high-performance" }) || 
+                           canvas.getContext("webgl", { powerPreference: "high-performance" });
+            }
 
             initTouchControls(player);
         }, 100);
