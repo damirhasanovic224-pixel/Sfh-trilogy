@@ -75,6 +75,12 @@ window.RufflePlayer.config = {
     </script>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 <style>body { touch-action: none !important; overflow: hidden !important; user-select: none !important; -webkit-user-select: none !important; }</style>
+<style>
+body, html { touch-action: none !important; overflow: hidden !important; user-select: none !important; -webkit-user-select: none !important; }
+#player canvas { transform: translateZ(0); will-change: transform; pointer-events: none !important; }
+#virtual-controls { pointer-events: none !important; }
+#dpad-zone, #fire-zone { pointer-events: auto !important; }
+</style>
 </head>
 <body>
 
