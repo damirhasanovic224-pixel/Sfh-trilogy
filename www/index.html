@@ -93,13 +93,10 @@
             }
         }
 
-                async function launchGame(swfFile) {
+                function launchGame(swfFile) {
             document.getElementById('menu').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
             
-            const res = await fetch('SWF/' + swfFile);
-            const swfData = await res.arrayBuffer();
-
             setTimeout(() => {
                 const ruffle = window.RufflePlayer.newest();
                 const player = ruffle.createPlayer();
@@ -108,9 +105,7 @@
                 container.appendChild(player);
                 
                 player.load({
-                    data: swfData,
-                    swfFileName: 'https://games.armorgames.com/games/' + swfFile,
-                    base: 'https://games.armorgames.com/'
+                    url: 'https://games.armorgames.com/' + swfFile
                 });
 
                 initTouchControls(player);
