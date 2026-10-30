@@ -43,7 +43,7 @@ window.RufflePlayer.config = {
     preferredRenderer: "webgl",
     compatibilityRules: false,
     forceScale: true,
-    scale: "exactFit",
+    scale: "showAll",
     frameRate: 60,
     tickRate: 60,
     wmode: "direct",
@@ -154,68 +154,102 @@ window.RufflePlayer.config = {
         document.getElementById("game-container").style.display = "none";
     }
 }</script>
+
 <script>
 function initTouchControls(player) {
     const container = document.getElementById("player");
-    function getCanvas() { return player.querySelector("canvas") || container; }
-
-    function triggerKey(code, key, isDown) {
-        const canvas = getCanvas();
-        canvas.dispatchEvent(new KeyboardEvent(isDown ? "keydown" : "keyup", {
-            bubbles: true, cancelable: true, code: code, key: key, keyCode: code.charCodeAt(0)
-        }));
+    
+    function getCanvas() {
+        return player.querySelector("canvas") || container.querySelector("canvas") || container;
     }
 
-    let moveTouchId = null, aimTouchId = null, moveStartX = 0, moveStartY = 0;
-    const activeKeys = {};
-
-    function updateKey(code, key, state) {
-        if (activeKeys[code] !== state) {
-            activeKeys[code] = state;
-            triggerKey(code, key, state);
+    let activeKeys = {};
+    function setKey(code, key, down) {
+        if (activeKeys[code] !== down) {
+            activeKeys[code] = down;
+            const canvas = getCanvas();
+            canvas.dispatchEvent(new KeyboardEvent(down ? "keydown" : "keyup", {
+                bubbles: true, cancelable: true, code: code, key: key, keyCode: code.charCodeAt(0)
+            }));
         }
     }
 
+    let leftTouchId = null;
+    let rightTouchId = null;
+    let leftStartX = 0, leftStartY = 0;
+
     function handleTouch(e) {
         e.preventDefault();
+        e.stopPropagation();
+        
         const canvas = getCanvas();
         const width = window.innerWidth;
-        let cMove = null, cAim = null;
+
+        let foundLeft = null;
+        let foundRight = null;
 
         for (let i = 0; i < e.touches.length; i++) {
             let t = e.touches[i];
             if (t.clientX < width / 2) {
-                if (moveTouchId === null || t.identifier === moveTouchId) cMove = t;
+                if (leftTouchId === null || t.identifier === leftTouchId) {
+                    foundLeft = t;
+                }
             } else {
-                if (aimTouchId === null || t.identifier === aimTouchId) cAim = t;
+                if (rightTouchId === null || t.identifier === rightTouchId) {
+                    foundRight = t;
+                }
             }
         }
 
-        // Movement
-        if (cMove) {
-            if (moveTouchId === null) { moveTouchId = cMove.identifier; moveStartX = cMove.clientX; moveStartY = cMove.clientY; }
-            let dx = cMove.clientX - moveStartX, dy = cMove.clientY - moveStartY, th = 20;
-            updateKey("KeyA", "a", dx < -th);
-            updateKey("KeyD", "d", dx > th);
-            updateKey("KeyW", "w", dy < -th);
-            updateKey("KeyS", "s", dy > th);
-        } else if (moveTouchId !== null) {
-            updateKey("KeyA", "a", false); updateKey("KeyD", "d", false);
-            updateKey("KeyW", "w", false); updateKey("KeyS", "s", false);
-            moveTouchId = null;
+        // Left Thumb (Movement D-Pad)
+        if (foundLeft) {
+            if (leftTouchId === null) {
+                leftTouchId = foundLeft.identifier;
+                leftStartX = foundLeft.clientX;
+                leftStartY = foundLeft.clientY;
+            }
+            let dx = foundLeft.clientX - leftStartX;
+            let dy = foundLeft.clientY - leftStartY;
+            let deadzone = 15;
+
+            setKey("KeyA", "a", dx < -deadzone);
+            setKey("KeyD", "d", dx > deadzone);
+            setKey("KeyW", "w", dy < -deadzone);
+            setKey("KeyS", "s", dy > deadzone);
+        } else {
+            if (leftTouchId !== null) {
+                setKey("KeyA", "a", false);
+                setKey("KeyD", "d", false);
+                setKey("KeyW", "w", false);
+                setKey("KeyS", "s", false);
+                leftTouchId = null;
+            }
         }
 
-        // Aim & Fire
-        if (cAim) {
-            let isNew = (aimTouchId === null);
-            aimTouchId = cAim.identifier;
-            canvas.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, clientX: cAim.clientX, clientY: cAim.clientY, buttons: 1 }));
+        // Right Thumb (Aim & Shoot Trackpad)
+        if (foundRight) {
+            let isNew = (rightTouchId === null);
+            rightTouchId = foundRight.identifier;
+            
+            let clientX = foundRight.clientX;
+            let clientY = foundRight.clientY;
+
+            canvas.dispatchEvent(new MouseEvent("mousemove", {
+                bubbles: true, cancelable: true, clientX: clientX, clientY: clientY, buttons: 1
+            }));
+
             if (isNew) {
-                canvas.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, clientX: cAim.clientX, clientY: cAim.clientY, buttons: 1 }));
+                canvas.dispatchEvent(new MouseEvent("mousedown", {
+                    bubbles: true, cancelable: true, clientX: clientX, clientY: clientY, buttons: 1
+                }));
             }
-        } else if (aimTouchId !== null) {
-            canvas.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, buttons: 0 }));
-            aimTouchId = null;
+        } else {
+            if (rightTouchId !== null) {
+                canvas.dispatchEvent(new MouseEvent("mouseup", {
+                    bubbles: true, cancelable: true, buttons: 0
+                }));
+                rightTouchId = null;
+            }
         }
     }
 
