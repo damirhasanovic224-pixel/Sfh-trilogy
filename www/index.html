@@ -13,7 +13,7 @@
         
         #game-container { width: 100vw; height: 100vh; display: none; position: absolute; top: 0; left: 0; background: #000; overflow: hidden; }
         #player { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
-        #player > ruffle-player { width: 100vw !important; height: 100vw !important; display: block !important; }
+        #player > ruffle-player { width: 100vw !important; height: 100vh !important; display: block !important; }
 
         /* Touch Overlay Layer - Hidden by default during loading/menus */
         .touch-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
@@ -100,7 +100,7 @@
             const container = document.getElementById('player');
             container.innerHTML = '';
             container.appendChild(player);
-            player.load({ data: swfData });
+            player.load({ data: swfData, base: "https://games.armorgames.com/" });
             initTouchControls(player);
         }</script>
 </body>
