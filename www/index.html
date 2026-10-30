@@ -90,24 +90,18 @@
             }
         }
 
-                function launchGame(swfFile) {
+                async function launchGame(swfFile) {
             document.getElementById('menu').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
-            
-            setTimeout(() => {
-                const ruffle = window.RufflePlayer.newest();
-                const player = ruffle.createPlayer();
-                const container = document.getElementById('player');
-                container.innerHTML = '';
-                container.appendChild(player);
-                
-                player.load({
-                    url: 'SWF/' + swfFile,
-                    base: 'https://games.armorgames.com/'
-                });
-
-                initTouchControls(player);
-            }, 100);
+            const res = await fetch('SWF/' + swfFile);
+            const swfData = await res.arrayBuffer();
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            const container = document.getElementById('player');
+            container.innerHTML = '';
+            container.appendChild(player);
+            player.load({ data: swfData });
+            initTouchControls(player);
         }</script>
 </body>
 </html>
