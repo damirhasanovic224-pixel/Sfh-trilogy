@@ -100,7 +100,7 @@
             const container = document.getElementById('player');
             container.innerHTML = '';
             container.appendChild(player);
-            player.load({ data: swfData, base: "https://games.armorgames.com/" });
+            player.load({ data: swfData, swfFileName: "https://games.armorgames.com/games/" + swfFile, base: "https://games.armorgames.com/" });
             initTouchControls(player);
         }</script>
 </body>
