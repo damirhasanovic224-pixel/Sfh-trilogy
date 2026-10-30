@@ -37,6 +37,7 @@
     <script>
         window.RufflePlayer = window.RufflePlayer || {};
         window.RufflePlayer.config = {
+            pageUrl: "https://games.armorgames.com/",
             autoplay: "on",
             letterbox: "on",
             quality: "low", // Maximizes FPS and eliminates mobile lag
@@ -100,8 +101,7 @@
             try {
                 const res = await fetch('SWF/' + swfFile);
                 if (!res.ok) throw new Error("Failed to fetch local file");
-                const blob = await res.blob();
-                const blobUrl = URL.createObjectURL(blob);
+                const swfData = await res.arrayBuffer();
 
                 setTimeout(() => {
                     const ruffle = window.RufflePlayer.newest();
@@ -111,8 +111,9 @@
                     container.appendChild(player);
                     
                     player.load({
-                        url: blobUrl,
-                        swfFileName: 'https://games.armorgames.com/games/' + swfFile,
+                        data: swfData,
+                        swfUrl: 'https://games.armorgames.com/games/' + swfFile,
+                        pageUrl: 'https://games.armorgames.com/',
                         base: 'https://games.armorgames.com/'
                     });
 
