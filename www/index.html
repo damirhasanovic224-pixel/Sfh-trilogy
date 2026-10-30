@@ -93,23 +93,36 @@
             }
         }
 
-                function launchGame(swfFile) {
+                async function launchGame(swfFile) {
             document.getElementById('menu').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
             
-            setTimeout(() => {
-                const ruffle = window.RufflePlayer.newest();
-                const player = ruffle.createPlayer();
-                const container = document.getElementById('player');
-                container.innerHTML = '';
-                container.appendChild(player);
-                
-                player.load({
-                    url: 'https://games.armorgames.com/' + swfFile
-                });
+            try {
+                const res = await fetch('SWF/' + swfFile);
+                if (!res.ok) throw new Error("Failed to fetch local file");
+                const blob = await res.blob();
+                const blobUrl = URL.createObjectURL(blob);
 
-                initTouchControls(player);
-            }, 100);
+                setTimeout(() => {
+                    const ruffle = window.RufflePlayer.newest();
+                    const player = ruffle.createPlayer();
+                    const container = document.getElementById('player');
+                    container.innerHTML = '';
+                    container.appendChild(player);
+                    
+                    player.load({
+                        url: blobUrl,
+                        swfFileName: 'https://games.armorgames.com/games/' + swfFile,
+                        base: 'https://games.armorgames.com/'
+                    });
+
+                    initTouchControls(player);
+                }, 100);
+            } catch (e) {
+                alert("Error launching game: " + e.message);
+                document.getElementById('menu').style.display = 'flex';
+                document.getElementById('game-container').style.display = 'none';
+            }
         }</script>
 </body>
 </html>
