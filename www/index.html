@@ -154,5 +154,76 @@ window.RufflePlayer.config = {
         document.getElementById("game-container").style.display = "none";
     }
 }</script>
+<script>
+function initTouchControls(player) {
+    const container = document.getElementById("player");
+    function getCanvas() { return player.querySelector("canvas") || container; }
+
+    function triggerKey(code, key, isDown) {
+        const canvas = getCanvas();
+        canvas.dispatchEvent(new KeyboardEvent(isDown ? "keydown" : "keyup", {
+            bubbles: true, cancelable: true, code: code, key: key, keyCode: code.charCodeAt(0)
+        }));
+    }
+
+    let moveTouchId = null, aimTouchId = null, moveStartX = 0, moveStartY = 0;
+    const activeKeys = {};
+
+    function updateKey(code, key, state) {
+        if (activeKeys[code] !== state) {
+            activeKeys[code] = state;
+            triggerKey(code, key, state);
+        }
+    }
+
+    function handleTouch(e) {
+        e.preventDefault();
+        const canvas = getCanvas();
+        const width = window.innerWidth;
+        let cMove = null, cAim = null;
+
+        for (let i = 0; i < e.touches.length; i++) {
+            let t = e.touches[i];
+            if (t.clientX < width / 2) {
+                if (moveTouchId === null || t.identifier === moveTouchId) cMove = t;
+            } else {
+                if (aimTouchId === null || t.identifier === aimTouchId) cAim = t;
+            }
+        }
+
+        // Movement
+        if (cMove) {
+            if (moveTouchId === null) { moveTouchId = cMove.identifier; moveStartX = cMove.clientX; moveStartY = cMove.clientY; }
+            let dx = cMove.clientX - moveStartX, dy = cMove.clientY - moveStartY, th = 20;
+            updateKey("KeyA", "a", dx < -th);
+            updateKey("KeyD", "d", dx > th);
+            updateKey("KeyW", "w", dy < -th);
+            updateKey("KeyS", "s", dy > th);
+        } else if (moveTouchId !== null) {
+            updateKey("KeyA", "a", false); updateKey("KeyD", "d", false);
+            updateKey("KeyW", "w", false); updateKey("KeyS", "s", false);
+            moveTouchId = null;
+        }
+
+        // Aim & Fire
+        if (cAim) {
+            let isNew = (aimTouchId === null);
+            aimTouchId = cAim.identifier;
+            canvas.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, clientX: cAim.clientX, clientY: cAim.clientY, buttons: 1 }));
+            if (isNew) {
+                canvas.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, clientX: cAim.clientX, clientY: cAim.clientY, buttons: 1 }));
+            }
+        } else if (aimTouchId !== null) {
+            canvas.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, buttons: 0 }));
+            aimTouchId = null;
+        }
+    }
+
+    container.addEventListener("touchstart", handleTouch, { passive: false });
+    container.addEventListener("touchmove", handleTouch, { passive: false });
+    container.addEventListener("touchend", handleTouch, { passive: false });
+    container.addEventListener("touchcancel", handleTouch, { passive: false });
+}
+</script>
 </body>
 </html>
