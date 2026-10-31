@@ -30,9 +30,9 @@
     '▶': 'left:130px;bottom:95px', 
     '▲': 'left:75px;bottom:165px', 
     '▼': 'left:75px;bottom:25px',
-    'Q': 'right:140px;bottom:20px',  // Weapon Swap near Reload
-    'E': 'right:80px;bottom:85px',   // Skill button
-    'R': 'right:20px;bottom:20px'    // Reload
+    'Q': 'right:140px;bottom:20px', 
+    'E': 'right:80px;bottom:85px',  
+    'R': 'right:20px;bottom:20px'   
   };
 
   function getTarget() {
@@ -62,6 +62,29 @@
       b.addEventListener(ev, () => { if(enabled) sendKey('keyup', map[label]); }));
     overlay.appendChild(b);
   });
+
+  // Dedicated FIRE Button (Bottom-Right Action Cluster)
+  const fireBtn = document.createElement('div');
+  fireBtn.textContent = 'FIRE';
+  fireBtn.style.cssText = 'position:absolute;right:20px;bottom:155px;width:70px;height:70px;'
+    + 'border-radius:50%;background:rgba(255,50,50,0.6);color:#fff;font:16px sans-serif;font-weight:bold;'
+    + 'display:flex;align-items:center;justify-content:center;pointer-events:auto;touch-action:none;user-select:none;border:2px solid rgba(255,255,255,0.4);';
+  
+  fireBtn.addEventListener('pointerdown', e => {
+    if (!enabled) return;
+    e.preventDefault(); e.stopPropagation();
+    const target = getTarget();
+    target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0, buttons: 1 }));
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev => {
+    fireBtn.addEventListener(ev, e => {
+      if (!enabled) return;
+      e.preventDefault(); e.stopPropagation();
+      const target = getTarget();
+      target.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0, buttons: 0 }));
+    });
+  });
+  overlay.appendChild(fireBtn);
 
   // Aim & Fire Trackpad Zone (Right Half of Screen)
   const aimZone = document.createElement('div');
