@@ -36,7 +36,7 @@
   };
 
   function getTarget() {
-    return document.querySelector('canvas') || document.getElementById('player') || document.body;
+    return document.querySelector('canvas') || document.querySelector('ruffle-player') || document.body;
   }
 
   function sendKey(type, k){
@@ -63,7 +63,7 @@
     overlay.appendChild(b);
   });
 
-  // Dedicated FIRE Button (Bottom-Right Action Cluster)
+  // Fixed Dedicated FIRE Button (Dispatches click directly to canvas center/current target)
   const fireBtn = document.createElement('div');
   fireBtn.textContent = 'FIRE';
   fireBtn.style.cssText = 'position:absolute;right:20px;bottom:155px;width:70px;height:70px;'
@@ -73,15 +73,22 @@
   fireBtn.addEventListener('pointerdown', e => {
     if (!enabled) return;
     e.preventDefault(); e.stopPropagation();
-    const target = getTarget();
-    target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0, buttons: 1 }));
+    const t = getTarget();
+    const rect = t.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    t.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: cx, clientY: cy, button: 0, buttons: 1 }));
   });
+
   ['pointerup','pointercancel','pointerleave'].forEach(ev => {
     fireBtn.addEventListener(ev, e => {
       if (!enabled) return;
       e.preventDefault(); e.stopPropagation();
-      const target = getTarget();
-      target.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0, buttons: 0 }));
+      const t = getTarget();
+      const rect = t.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      t.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, clientX: cx, clientY: cy, button: 0, buttons: 0 }));
     });
   });
   overlay.appendChild(fireBtn);
