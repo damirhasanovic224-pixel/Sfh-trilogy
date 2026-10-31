@@ -14,21 +14,25 @@
   overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;pointer-events:none;touch-action:none;';
   document.body.appendChild(overlay);
 
-  // Movement & Action Buttons Cluster on the Left
+  // Map controls: Movement, Crouch, Reload, Weapon Swap (Q), Skill (E)
   const map = { 
     '◀': ['a','KeyA'], 
     '▶': ['d','KeyD'], 
     '▲': ['w','KeyW'], 
     '▼': ['s','KeyS'], 
-    'R': ['r','KeyR'] 
+    'R': ['r','KeyR'],
+    'Q': ['q','KeyQ'],
+    'E': ['e','KeyE']
   };
   
   const pos = { 
     '◀': 'left:20px;bottom:95px', 
     '▶': 'left:130px;bottom:95px', 
     '▲': 'left:75px;bottom:165px', 
-    '▼': 'left:75px;bottom:25px',   // Positioned at the bottom of the movement cluster
-    'R': 'right:20px;bottom:20px'   // Reload button on the bottom right
+    '▼': 'left:75px;bottom:25px',
+    'Q': 'right:140px;bottom:20px',  // Weapon Swap near Reload
+    'E': 'right:80px;bottom:85px',   // Skill button
+    'R': 'right:20px;bottom:20px'    // Reload
   };
 
   function getTarget() {
@@ -38,7 +42,7 @@
   function sendKey(type, k){
     if (!enabled) return;
     getTarget().dispatchEvent(new KeyboardEvent(type, {
-      key: k[0], code: k[1], keyCode: k[0].charCodeAt(0), bubbles: true, cancelable: true
+      key: k[0], code: k[1], keyCode: k[0].toUpperCase().charCodeAt(0), bubbles: true, cancelable: true
     }));
   }
 
@@ -47,7 +51,7 @@
     b.textContent = label;
     b.style.cssText = 'position:absolute;width:55px;height:55px;'
       + 'border-radius:50%;background:rgba(255,255,255,0.25);color:#fff;'
-      + 'font:22px sans-serif;display:flex;align-items:center;'
+      + 'font:20px sans-serif;font-weight:bold;display:flex;align-items:center;'
       + 'justify-content:center;pointer-events:auto;touch-action:none;user-select:none;'
       + pos[label];
     b.addEventListener('pointerdown', e => {
@@ -67,7 +71,7 @@
   let activePointerId = null;
   aimZone.addEventListener('pointerdown', e => {
     if (!enabled) return;
-    if (e.clientX > window.innerWidth - 130 && e.clientY < 60) return; // Ignore clicks on the toggle button
+    if (e.clientX > window.innerWidth - 130 && e.clientY < 60) return;
     e.preventDefault(); e.stopPropagation();
     activePointerId = e.pointerId;
     const target = getTarget();
